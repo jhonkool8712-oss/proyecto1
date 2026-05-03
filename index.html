@@ -33,7 +33,7 @@
 </div>
 
 <script>
-const API = "http://localhost/api.php";
+const API = "api.php";
 
 function cargarUsuarios() {
     fetch(API)
@@ -48,13 +48,17 @@ function cargarUsuarios() {
                     <td>${u.cedula}</td>
                     <td>${u.telefono}</td>
                     <td>
-                        <button onclick="editar(${u.id},'${u.nombre}','${u.cedula}','${u.telefono}')">Editar</button>
-                        <button class="rojo" onclick="eliminar(${u.id})">Eliminar</button>
+                        <button type="button" onclick="editar(${u.id},'${u.nombre}','${u.cedula}','${u.telefono}')">Editar</button>
+                        <button type="button" class="rojo" onclick="eliminar(${u.id})">Eliminar</button>
                     </td>
                 </tr>
             `;
         });
-        document.getElementById("tablaUsuarios").innerHTML = html;
+        document.getElementById("tablaUsuarios").innerHTML = html || '<tr><td colspan="5">No hay usuarios aún</td></tr>';
+    })
+    .catch(error => {
+        console.error('Error al cargar usuarios:', error);
+        document.getElementById("tablaUsuarios").innerHTML = '<tr><td colspan="5">No se pudieron cargar los usuarios</td></tr>';
     });
 }
 
@@ -65,14 +69,19 @@ function guardar() {
     const telefono = document.getElementById("telefono").value;
 
     const metodo = id ? "PUT" : "POST";
+    const body = JSON.stringify({ id, nombre, cedula, telefono });
 
     fetch(API, {
         method: metodo,
-        body: JSON.stringify({ id, nombre, cedula, telefono })
-    }).then(() => {
+        headers: { "Content-Type": "application/json" },
+        body
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Error en la petición');
         limpiar();
         cargarUsuarios();
-    });
+    })
+    .catch(error => console.error('Error al guardar usuario:', error));
 }
 
 function editar(id,nombre,cedula,telefono){
@@ -83,19 +92,25 @@ function editar(id,nombre,cedula,telefono){
 }
 
 function eliminar(id){
-    if(confirm("¿Eliminar usuario?")){
-        fetch(API,{
-            method:"DELETE",
+    if (confirm("¿Eliminar usuario?")){
+        fetch(API, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({id})
-        }).then(()=>cargarUsuarios());
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error en la eliminación');
+            cargarUsuarios();
+        })
+        .catch(error => console.error('Error al eliminar usuario:', error));
     }
 }
 
 function limpiar(){
-    document.getElementById("id").value="";
-    document.getElementById("nombre").value="";
-    document.getElementById("cedula").value="";
-    document.getElementById("telefono").value="";
+    document.getElementById("id").value = "";
+    document.getElementById("nombre").value = "";
+    document.getElementById("cedula").value = "";
+    document.getElementById("telefono").value = "";
 }
 
 cargarUsuarios();
