@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "gestion_usuarios");
+$conn = new mysqli("jhonatan1_proyecto", "jhonathan1", "clase123", "gestion_usuarios");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
